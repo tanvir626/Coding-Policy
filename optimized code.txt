@@ -1,0 +1,45 @@
+public async Task LecturerAttendanceMonthReportAsync(string month, string deviceSerial)
+{
+    if (string.IsNullOrWhiteSpace(month))
+        throw new ArgumentException("Month is required.");
+
+    if (!DateTime.TryParse(month + "-01", out DateTime fromDate))
+        throw new ArgumentException("Invalid month format.");
+
+    DateTime toDate = fromDate.AddMonths(1);
+
+    DataTable dataTable = new DataTable();
+
+    string connectionString = ConfigurationManager.ConnectionStrings["AttendanceDb"].ConnectionString;
+    string query = @"
+        SELECT C.CHECKTIME, C.USERID, U.Badgenumber, U.Name
+        FROM CHECKINOUT C
+        INNER JOIN USERINFO U ON U.USERID = C.USERID
+        WHERE sn = ? AND CHECKTIME >= ? AND CHECKTIME < ?";
+
+    try
+    {
+        using (var conn = new OleDbConnection(connectionString))
+        using (var cmd = new OleDbCommand(query, conn))
+        {
+            cmd.Parameters.AddWithValue("?", deviceSerial);
+            cmd.Parameters.AddWithValue("?", fromDate);
+            cmd.Parameters.AddWithValue("?", toDate);
+
+            using (var adapter = new OleDbDataAdapter(cmd))
+            {
+                await Task.Run(() => adapter.Fill(dataTable));
+            }
+        }
+
+        ReportDataSource datasource = new ReportDataSource("DataSet1", dataTable);
+        ReportViewer1.LocalReport.DataSources.Clear();
+        ReportViewer1.LocalReport.DataSources.Add(datasource);
+        ReportViewer1.LocalReport.Refresh();
+    }
+    catch (Exception ex)
+    {
+        // Log error here
+        throw;
+    }
+}

@@ -1,0 +1,22 @@
+public async Task PartyPrepAsync()
+{
+    var pizzaTask = OrderPizzaAsync(); // Start pizza order in background for 30 minute
+    CleanRoom();                       // Start cleaning right away
+    PlayMusic();                       // Start music too
+    await pizzaTask;                   // Wait for pizza to arrive before serving
+}
+await Task.Run(() => adapter.Fill(dataTable)); // Offloads to background thread
+
+
+Task fillTask = Task.Run(() => adapter.Fill(dataTable));
+DoSomethingElse();   // Independent
+await fillTask;      // Wait only before using dataTable
+UseData(dataTable);  // Now it's safe
+
+
+
+1.From now on no public void functionname() only public async Task Functionname()
+2.When Createing index of a column use this nameing create index IX_CHECKINOUT_sn_CHECKTIME on CHECKINOUT(CHECKTIME,sn)
+3.Connection Strings must be call like this string connectionString = ConfigurationManager.ConnectionStrings["AccessDB_For_Lecturer_Att"].ConnectionString;
+4.less use of {} in if statement
+5.Use try -catch- throw new exception("dd") & Send error info from server to client, e.g., via AJAX response
